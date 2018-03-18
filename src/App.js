@@ -1,10 +1,16 @@
 import React, { Component } from 'react';
 import fetch from 'cross-fetch';
 import queryString from 'query-string';
+import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
+import { GridList, GridTile } from 'material-ui/GridList';
+import FlatButton from 'material-ui/FlatButton';
+import RefreshIndicator from 'material-ui/RefreshIndicator';
 import './App.css';
 
-const client_id = '1c4cb54f37114d12987ef3e327ecaed8';
-const redirect_uri = 'http://localhost:3000';
+// Uncheck  Disable implicit OAuth in your instagram developer console
+// Enter your client ID and redirect uri
+// const client_id = '';
+// const redirect_uri = '';
 
 class App extends Component {
   constructor() {
@@ -35,26 +41,56 @@ class App extends Component {
     }
   }
   fetchImages() {
+    this.setState({ loading: true })
     fetch(`https://api.instagram.com/v1/users/self/media/recent/?count=4&access_token=${this.state.token}`)
-      .then(res => res.json()).then(res => this.setState({ images: res.data, next_url: res.pagination.next_url }));
+      .then(res => res.json()).then(res => this.setState({
+        images: res.data,
+        next_url: res.pagination.next_url,
+        loading: false
+      }));
   }
   fetchNextPage() {
+    this.setState({ loading: true })
     fetch(this.state.next_url).then(res => res.json())
       .then(res => this.setState({
         images: [ ...this.state.images, ...res.data ],
-        next_url: res.pagination.next_url
+        next_url: res.pagination.next_url,
+        loading: false
       }));
   }
   render() {
+    const loader = this.state.loading ?
+    <div className="loader-overlay">
+      <RefreshIndicator
+        size={40}
+        status="loading"
+        top={134}
+        left={149}
+        className="loading-indicator"
+      />
+    </div> : null;
+    const loadMore = this.state.next_url ?
+      <FlatButton onClick={this.fetchNextPage} label="Load More" /> :
+      null;
+
     return (
-      <div className="App">
-        <ul>
-          {this.state.images.map(image => <li key={image.id}>
-            <img src={image.images.thumbnail.url} />
-          </li>)}
-        </ul>
-        <div onClick={this.fetchNextPage}>Load More</div>
-      </div>
+      <MuiThemeProvider>
+        <div className="App">
+          {loader}
+          <GridList cellHeight={150} className="grid-list">
+            {this.state.images.map(image =>
+              <GridTile
+                key={image.id}
+                title={<span>by <b>{image.user.username}</b></span>}
+                subtitle={<a href={image.link}>Link</a>}
+                className="grid-tile"
+              >
+                <img src={image.images.thumbnail.url}/>
+              </GridTile>)}
+          </GridList>
+          {loadMore}
+        </div>
+      </MuiThemeProvider>
     );
   }
 }
