@@ -22,8 +22,10 @@ class App extends Component {
     }
     this.state = {
       images: [],
+      next_url: '',
       token
     };
+    this.fetchNextPage = this.fetchNextPage.bind(this);
   }
   componentDidMount() {
     if (!this.state.token) {
@@ -33,8 +35,13 @@ class App extends Component {
     }
   }
   fetchImages() {
-    fetch(`https://api.instagram.com/v1/users/self/media/recent/?access_token=${this.state.token}`)
-      .then(res => res.json()).then(({ data }) => this.setState({ images: data }));
+    fetch(`https://api.instagram.com/v1/users/self/media/recent/?count=4&access_token=${this.state.token}`)
+      .then(res => res.json()).then(res => this.setState({ images: res.data, next_url: res.pagination.next_url }));
+  }
+  fetchNextPage() {
+    fetch(this.state.next_url).then(res => res.json())
+      .then(res => this.setState({ images: res.data, next_url: res.pagination.next_url }));
+
   }
   render() {
     return (
@@ -44,6 +51,7 @@ class App extends Component {
             <img src={image.images.thumbnail.url} />
           </li>)}
         </ul>
+        <div onClick={this.fetchNextPage}>Next</div>
       </div>
     );
   }
