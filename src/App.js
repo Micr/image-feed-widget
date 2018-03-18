@@ -40,8 +40,10 @@ class App extends Component {
   }
   fetchNextPage() {
     fetch(this.state.next_url).then(res => res.json())
-      .then(res => this.setState({ images: res.data, next_url: res.pagination.next_url }));
-
+      .then(res => this.setState({
+        images: [ ...this.state.images, ...res.data ],
+        next_url: res.pagination.next_url
+      }));
   }
   render() {
     return (
@@ -51,7 +53,7 @@ class App extends Component {
             <img src={image.images.thumbnail.url} />
           </li>)}
         </ul>
-        <div onClick={this.fetchNextPage}>Next</div>
+        <div onClick={this.fetchNextPage}>Load More</div>
       </div>
     );
   }
