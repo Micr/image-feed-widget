@@ -10,7 +10,7 @@ import './App.css';
 // Uncheck  Disable implicit OAuth in your instagram developer console
 // Enter your client ID and redirect uri
 // const client_id = '';
-// const redirect_uri = '';
+const redirect_uri = 'localhost:3000';
 
 class App extends Component {
   constructor() {
